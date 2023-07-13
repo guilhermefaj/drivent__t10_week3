@@ -4,7 +4,15 @@ import supertest from 'supertest';
 import { Enrollment, TicketStatus, User } from '@prisma/client';
 import { cleanDb, generateValidToken } from '../helpers';
 import { createHotel } from '../factories/hotels-factory';
-import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
+import {
+  createEnrollmentWithAddress,
+  createTicket,
+  createTicketType,
+  createTicketTypeRemote,
+  createTicketTypeWithHotel,
+  createTicketTypeWithoutHotel,
+  createUser,
+} from '../factories';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
@@ -60,6 +68,36 @@ describe('GET /hotels with valid token', () => {
     const ticketType = await createTicketType();
     await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
     await createHotel();
+
+    const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+    expect(status).toBe(httpStatus.PAYMENT_REQUIRED);
+  });
+
+  it('should respond with status 402 when does not includes hotel', async () => {
+    const ticketType = await createTicketTypeWithoutHotel();
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+    createHotel();
+
+    const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+    expect(status).toBe(httpStatus.PAYMENT_REQUIRED);
+  });
+
+  it('should respond with status 402 when is remote', async () => {
+    const ticketType = await createTicketTypeRemote();
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+    createHotel();
+
+    const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+    expect(status).toBe(httpStatus.PAYMENT_REQUIRED);
+  });
+
+  it('should respond with status 402 when Reserved', async () => {
+    const ticketType = await createTicketTypeWithHotel();
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+    createHotel();
 
     const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
