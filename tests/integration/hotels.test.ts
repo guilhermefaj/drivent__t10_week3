@@ -33,8 +33,7 @@ describe('GET /hotels', () => {
 
   it('should respond with status 200 and non-empty list if hotels exist', async () => {
     const token = await generateValidToken();
-    const session = await createSession('valid_token');
-    const hotel = await createHotel(session.userId, token);
+    const hotel = await createHotel();
 
     const { status, body } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
