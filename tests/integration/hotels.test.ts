@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import supertest from 'supertest';
 import { cleanDb, generateValidToken } from '../helpers';
 import { createHotel } from '../factories/hotels-factory';
-import { createSession } from '../factories';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
@@ -30,13 +29,13 @@ describe('GET /hotels', () => {
 
     expect(response.status).toBe(httpStatus.UNAUTHORIZED);
   });
+});
 
-  it('should respond with status 200 and non-empty list if hotels exist', async () => {
-    const token = await generateValidToken();
-    const hotel = await createHotel();
+describe('GET /hotels with valid token', () => {
+  it('should respond with status 404 if enrollment not exist', async () => {
+    const token = generateValidToken();
+    const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
-    const { status, body } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-
-    expect(status).toBe(200);
+    expect(response.status).toBe(httpStatus.NOT_FOUND);
   });
 });
