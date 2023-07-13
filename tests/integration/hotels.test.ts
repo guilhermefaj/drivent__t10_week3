@@ -1,9 +1,10 @@
 import faker from '@faker-js/faker';
 import httpStatus from 'http-status';
 import supertest from 'supertest';
+import { Enrollment, TicketStatus, User } from '@prisma/client';
 import { cleanDb, generateValidToken } from '../helpers';
 import { createHotel } from '../factories/hotels-factory';
-import { createEnrollmentWithAddress, createUser } from '../factories';
+import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
@@ -33,21 +34,35 @@ describe('GET /hotels', () => {
 });
 
 describe('GET /hotels with valid token', () => {
-  it("should respond with status 404 if enrollment doesn't exist", async () => {
-    const token = await generateValidToken();
-    const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+  let user: User;
+  let token: string;
+  let enrollment: Enrollment;
 
-    expect(response.status).toBe(httpStatus.NOT_FOUND);
+  beforeEach(async () => {
+    user = await createUser();
+    token = await generateValidToken(user);
+    enrollment = await createEnrollmentWithAddress(user);
   });
 
-  it("should responde with status 404 if ticket does'nt exist", async () => {
-    const user = await createUser();
-    const token = await generateValidToken(user);
+  it("should respond with status 404 if enrollment doesn't exist", async () => {
+    const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
-    await createEnrollmentWithAddress(user);
+    expect(status).toBe(httpStatus.NOT_FOUND);
+  });
 
+  it("should respond with status 404 if ticket does'nt exist", async () => {
     const { status } = await server.get('/tickets').set('Authorization', `Bearer ${token}`);
 
     expect(status).toBe(httpStatus.NOT_FOUND);
+  });
+
+  it('should respond with status 402 when need payment', async () => {
+    const ticketType = await createTicketType();
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+    await createHotel();
+
+    const { status } = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+    expect(status).toBe(httpStatus.PAYMENT_REQUIRED);
   });
 });
