@@ -16,6 +16,12 @@ export async function getHotels(req: AuthenticatedRequest, res: Response) {
     if (error.name === 'NotFoundHotel') {
       return res.status(httpStatus.NOT_FOUND).send(error.message);
     }
+    if (error.name === 'NotFoundTicket') {
+      return res.status(httpStatus.NOT_FOUND).send(error.message);
+    }
+    if (error.name === 'PaymentRequired') {
+      return res.status(httpStatus.PAYMENT_REQUIRED).send(error.message);
+    }
 
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
