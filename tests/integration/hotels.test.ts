@@ -34,7 +34,7 @@ describe('GET /hotels', () => {
 
 describe('GET /hotels with valid token', () => {
   it("should respond with status 404 if enrollment doesn't exist", async () => {
-    const token = generateValidToken();
+    const token = await generateValidToken();
     const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(httpStatus.NOT_FOUND);
