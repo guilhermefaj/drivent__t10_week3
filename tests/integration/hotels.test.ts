@@ -104,3 +104,9 @@ describe('GET /hotels with valid token', () => {
     expect(status).toBe(httpStatus.PAYMENT_REQUIRED);
   });
 });
+
+// describe('GET /hotels:id', () => {
+//   it('should respond with status 404 when not found hotelId') {
+//     const
+//   }
+// })
