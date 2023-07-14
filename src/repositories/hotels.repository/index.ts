@@ -6,7 +6,7 @@ async function findHotels(): Promise<Hotel[]> {
 }
 
 async function findHotelsWithRooms(hotelId: number) {
-  return prisma.hotel.findUnique({
+  const hotel = await prisma.hotel.findFirst({
     where: {
       id: hotelId,
     },
@@ -14,6 +14,12 @@ async function findHotelsWithRooms(hotelId: number) {
       Rooms: true,
     },
   });
+
+  if (!hotel) {
+    throw new Error('Hotel with rooms does not exist');
+  }
+
+  return hotel;
 }
 
 const hotelsRepository = {
