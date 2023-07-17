@@ -171,11 +171,17 @@ describe('GET /hotels/:id with valid token', () => {
   });
 
   it('should respond with status 200 and return the hotel if hotelId is valid', async () => {
-    const { status, body } = await server.get(`/hotels/${hotelId}`).set('Authorization', `Bearer ${token}`);
+    const ticketType = await createTicketTypeWithHotel();
+    const enrollment = await createEnrollmentWithAddress(user);
+    await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
+    const hotel = await createHotel();
+
+    const { status, body } = await server.get(`/hotels/${hotel.id}`).set('Authorization', `Bearer ${token}`);
 
     console.log(body);
 
     expect(status).toBe(httpStatus.OK);
-    expect(body).toHaveProperty('name', 'Hotel Name');
+    expect(body).toHaveProperty('name', hotel.name);
   });
 });

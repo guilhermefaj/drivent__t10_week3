@@ -1,12 +1,21 @@
 import faker from '@faker-js/faker';
 import { generateCPF, getStates } from '@brazilian-utils/brazilian-utils';
 import { User } from '@prisma/client';
-
 import { createUser } from './users-factory';
 import { prisma } from '@/config';
 
 export async function createEnrollmentWithAddress(user?: User) {
   const incomingUser = user || (await createUser());
+
+  const existingEnrollment = await prisma.enrollment.findFirst({
+    where: {
+      userId: incomingUser.id,
+    },
+  });
+
+  if (existingEnrollment) {
+    return existingEnrollment;
+  }
 
   return prisma.enrollment.create({
     data: {

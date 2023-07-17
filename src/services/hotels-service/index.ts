@@ -41,7 +41,7 @@ async function getHotels(userId: number): Promise<Hotel[]> {
   return hotels;
 }
 
-async function getHotelsWithRooms(userId: number, hotelId: number): Promise<HotelWithRooms> {
+async function getHotelsWithRooms(userId: number, hotelId: number): Promise<Hotel> {
   if (!hotelId) {
     throw {
       name: 'NotFoundHotelId',
